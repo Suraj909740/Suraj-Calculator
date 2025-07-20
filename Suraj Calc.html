@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Patient Calculator</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+        }
+        .custom-select {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url('data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%234A5568" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"%3E%3Cpolyline points="6 9 12 15 18 9"%3E%3C/polyline%3E%3C/svg%3E');
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1.2em auto;
+        }
+        .section-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .section-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        /* Styling for the formula display */
+        details > summary {
+            list-style: none;
+            cursor: pointer;
+        }
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        .formula-box {
+            background-color: rgba(0,0,0,0.05);
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: #333;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+        /* Gray striped background */
+        .striped-bg-gray {
+             background-color: #f1f5f9;
+             background-image: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(203, 213, 225, 0.5) 10px,
+                rgba(203, 213, 225, 0.5) 20px
+            );
+        }
+        /* Orange-yellow striped background */
+        .striped-bg-orange-yellow {
+             background-color: #fff7ed; /* orange-50 */
+             background-image: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 10px,
+                rgba(254, 243, 199, 0.7) 10px, /* yellow-200 with opacity */
+                rgba(254, 243, 199, 0.7) 20px
+            );
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+
+    <!-- Header with Dropdown Navigation -->
+    <header class="bg-white/80 backdrop-blur-lg shadow-sm sticky top-0 z-20 border-b border-gray-200">
+        <div class="max-w-lg mx-auto p-4">
+            <div class="relative">
+                <select id="nav-select" class="custom-select w-full bg-gray-100 border border-gray-300 text-gray-800 font-semibold py-3 px-4 pr-10 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                    <option value="#patient-info">Patient Information</option>
+                    <option value="#bmi">Body Mass Parameters</option>
+                    <option value="#iv-agents">IV Agent Doses</option>
+                    <option value="#la-doses">LA Doses</option>
+                    <option value="#fluid-calculation">Fluid Calculation</option>
+                    <option value="#ventilator-settings">Ventilator Settings</option>
+                    <option value="#blood-loss">Blood Loss Calculations</option>
+                </select>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-lg mx-auto p-4 sm:p-6 space-y-8">
+
+        <!-- Section 1: Patient Information (Input) -->
+        <section id="patient-info" class="bg-white p-6 rounded-2xl shadow-md section-card">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6 border-b pb-3">Patient Information</h2>
+            <form id="patient-form" class="space-y-4">
+                <div>
+                    <label for="gender" class="block text-sm font-medium text-gray-600">Gender</label>
+                    <select id="gender" class="custom-select mt-1 block w-full px-4 py-2 bg-gray-50 border-gray-200 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="height" class="block text-sm font-medium text-gray-600">Height (cm)</label>
+                    <input type="number" id="height" class="mt-1 block w-full px-4 py-2 bg-gray-50 border-gray-200 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="e.g., 175">
+                </div>
+                <div>
+                    <label for="weight" class="block text-sm font-medium text-gray-600">Weight (kg)</label>
+                    <input type="number" id="weight" class="mt-1 block w-full px-4 py-2 bg-gray-50 border-gray-200 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="e.g., 70">
+                </div>
+                 <div>
+                    <label for="haemoglobin" class="block text-sm font-medium text-gray-600">Haemoglobin (g/dL)</label>
+                    <input type="number" id="haemoglobin" class="mt-1 block w-full px-4 py-2 bg-gray-50 border-gray-200 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="e.g., 14">
+                </div>
+                <div>
+                    <label for="hct-initial" class="block text-sm font-medium text-gray-600">Initial HCT (%)</label>
+                    <input type="number" id="hct-initial" class="mt-1 block w-full px-4 py-2 bg-gray-50 border-gray-200 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="e.g., 45">
+                </div>
+                <div>
+                    <label for="hct-final" class="block text-sm font-medium text-gray-600">Final HCT (%)</label>
+                    <input type="number" id="hct-final" class="mt-1 block w-full px-4 py-2 bg-gray-50 border-gray-200 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" placeholder="e.g., 30">
+                </div>
+            </form>
+        </section>
+
+        <!-- Section 2: Body Mass Parameters -->
+        <section id="bmi" class="bg-gradient-to-br from-blue-50 to-blue-100 p-6 rounded-2xl shadow-md section-card">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-blue-800">Body Mass Parameters</h2>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" />
+                </svg>
+            </div>
+            <div id="calculations-container" class="space-y-4"></div>
+        </section>
+        
+        <!-- Section 3: IV Agent Doses -->
+        <section id="iv-agents" class="p-6 rounded-2xl shadow-md section-card bg-transparent !p-0 !shadow-none">
+            <div class="flex items-center justify-between mb-4 bg-gradient-to-br from-yellow-50 to-yellow-100 p-6 rounded-t-2xl">
+                <h2 class="text-2xl font-bold text-yellow-800">IV Agent Doses</h2>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 7l4-4m0 0l4 4m-4-4v18" /><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 8.5l15 15" />
+                </svg>
+            </div>
+            <div id="iv-agents-output" class="space-y-6 bg-transparent p-6 pt-0 rounded-b-2xl"></div>
+        </section>
+
+        <!-- Section 4: LA Doses -->
+        <section id="la-doses" class="striped-bg-gray p-6 rounded-2xl shadow-md section-card">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-slate-800">LA Doses</h2>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            </div>
+            <div id="la-doses-output" class="space-y-4"></div>
+        </section>
+        
+        <!-- Section 5: Fluid Calculation -->
+        <section id="fluid-calculation" class="bg-gradient-to-br from-cyan-50 to-cyan-100 p-6 rounded-2xl shadow-md section-card">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-cyan-800">Fluid Calculation</h2>
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-cyan-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l2.414-2.414a1 1 0 01.707-.293H20" />
+                </svg>
+            </div>
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="starvation-hours" class="block text-sm font-medium text-cyan-700">Starvation (hrs)</label>
+                        <input type="number" id="starvation-hours" class="mt-1 block w-full px-4 py-2 bg-white/70 border-cyan-200 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition" value="8">
+                    </div>
+                    <div>
+                        <label for="maintenance-factor" class="block text-sm font-medium text-cyan-700">Maint. (mL/kg/hr)</label>
+                        <input type="number" id="maintenance-factor" class="mt-1 block w-full px-4 py-2 bg-white/70 border-cyan-200 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition" value="2">
+                    </div>
+                </div>
+                 <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label for="blood-loss" class="block text-sm font-medium text-cyan-700">Blood Loss (mL)</label>
+                        <input type="number" id="blood-loss" class="mt-1 block w-full px-4 py-2 bg-white/70 border-cyan-200 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition" value="0">
+                    </div>
+                    <div>
+                        <label for="replacement-factor" class="block text-sm font-medium text-cyan-700">Replace Factor</label>
+                        <input type="number" id="replacement-factor" class="mt-1 block w-full px-4 py-2 bg-white/70 border-cyan-200 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition" value="3">
+                    </div>
+                </div>
+            </div>
+            <div id="fluid-output" class="mt-6"></div>
+        </section>
+
+        <!-- Section 6: Ventilator Settings -->
+        <section id="ventilator-settings" class="bg-gradient-to-br from-purple-50 to-purple-100 p-6 rounded-2xl shadow-md section-card">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-purple-800">Ventilator Settings</h2>
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 12.572l-7.5 7.428-7.5-7.428m0 0A5.002 5.002 0 014.5 7.572a5.002 5.002 0 015.001-4.995 5.002 5.002 0 014.995 5.001 5.002 5.002 0 01-1.497 3.504m-7.5 7.428v-3.428" />
+                </svg>
+            </div>
+            <div id="ventilator-output" class="space-y-3"></div>
+        </section>
+
+        <!-- Section 7: Blood Loss Calculations -->
+        <section id="blood-loss" class="bg-gradient-to-br from-red-50 to-red-100 p-6 rounded-2xl shadow-md section-card">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-red-800">Blood Loss Calculations</h2>
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                </svg>
+            </div>
+            <div id="blood-loss-output" class="space-y-4"></div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- DOM Element References ---
+        const patientForm = document.getElementById('patient-form');
+        const navSelect = document.getElementById('nav-select');
+        const genderInput = document.getElementById('gender');
+        const heightInput = document.getElementById('height');
+        const weightInput = document.getElementById('weight');
+        const haemoglobinInput = document.getElementById('haemoglobin');
+        const hctInitialInput = document.getElementById('hct-initial');
+        const hctFinalInput = document.getElementById('hct-final');
+        
+        const starvationHoursInput = document.getElementById('starvation-hours');
+        const maintenanceFactorInput = document.getElementById('maintenance-factor');
+        const bloodLossInput = document.getElementById('blood-loss');
+        const replacementFactorInput = document.getElementById('replacement-factor');
+
+        const calculationsContainer = document.getElementById('calculations-container');
+        const ivAgentsOutput = document.getElementById('iv-agents-output');
+        const laDosesOutput = document.getElementById('la-doses-output');
+        const fluidOutput = document.getElementById('fluid-output');
+        const ventilatorOutput = document.getElementById('ventilator-output');
+        const bloodLossOutput = document.getElementById('blood-loss-output');
+        
+
+        // --- Helper Functions ---
+        const createResultCard = (title, resultHTML, formulaHTML, color = 'blue') => {
+            return `
+                <div class="bg-white/60 p-4 rounded-lg shadow-sm">
+                    <div class="flex justify-between items-center">
+                        <h3 class="font-bold text-${color}-900">${title}</h3>
+                        <div class="text-right">${resultHTML}</div>
+                    </div>
+                    <details class="mt-2">
+                        <summary class="text-xs font-semibold text-gray-500 hover:text-${color}-600 transition">Show Formula</summary>
+                        <div class="formula-box">${formulaHTML}</div>
+                    </details>
+                </div>
+            `;
+        };
+        
+        const createDrugSubCard = (title, resultHTML, formulaHTML, color) => {
+             return `
+                <div class="bg-white/60 p-3 rounded-md mt-2">
+                    <div class="flex justify-between items-center">
+                        <h4 class="font-semibold text-${color}-800 text-sm">${title}</h4>
+                        <div class="text-right text-sm">${resultHTML}</div>
+                    </div>
+                    ${formulaHTML ? `
+                    <details class="mt-1">
+                        <summary class="text-xs font-semibold text-gray-500 hover:text-${color}-600 transition">Show Formula</summary>
+                        <div class="formula-box !text-xs">${formulaHTML}</div>
+                    </details>` : ''}
+                </div>
+            `;
+        }
+
+        const createLADoseCard = (title, contentHTML, formulaHTML) => {
+            return `
+                <div class="bg-slate-100/80 p-4 rounded-lg">
+                    <div class="flex justify-between items-center mb-2">
+                        <h3 class="font-bold text-lg text-slate-900">${title}</h3>
+                        <details>
+                            <summary class="text-xs font-semibold text-gray-500 hover:text-slate-600 transition">Show Formula</summary>
+                            <div class="formula-box">${formulaHTML}</div>
+                        </details>
+                    </div>
+                    <div class="space-y-2">${contentHTML}</div>
+                </div>
+            `;
+        };
+
+        const createLADoseRow = (route, withAdrenaline, withoutAdrenaline) => {
+            return `
+                <div class="grid grid-cols-3 items-center text-sm bg-white/60 p-2 rounded-md">
+                    <strong class="text-slate-800">${route}</strong>
+                    <div class="text-center text-slate-700">${withAdrenaline}</div>
+                    <div class="text-center text-slate-700">${withoutAdrenaline}</div>
+                </div>
+            `;
+        };
+
+        const createVentilatorResultCard = (title, value, unit) => {
+             return `
+                <div class="bg-white/60 p-3 rounded-lg shadow-sm flex justify-between items-center">
+                    <h3 class="font-semibold text-purple-900">${title}</h3>
+                    <div>
+                        <span class="text-xl font-bold text-purple-900">${value}</span>
+                        <span class="text-sm text-purple-700 ml-1">${unit}</span>
+                    </div>
+                </div>
+            `;
+        }
+        
+        const createResultDisplay = (value, unit, color = 'blue') => `<p class="text-2xl font-extrabold text-${color}-900">${value}</p><p class="text-xs text-${color}-700">${unit}</p>`;
+        const createSubResultDisplay = (value, unit, color) => `<span class="font-bold text-${color}-900">${value}</span><span class="text-xs ml-1 text-${color}-700">${unit}</span>`;
+        const createErrorDisplay = (message, color = 'gray') => `<p class="text-sm font-semibold text-${color}-600 p-2 text-right">${message}</p>`;
+        const createCategoryDisplay = (category, colorClass) => `<p class="p-2 rounded-lg text-center font-bold ${colorClass} bg-opacity-20 ${colorClass.replace('text', 'bg')}">${category}</p>`;
+
+        // --- Core Calculation Logic ---
+        function calculateAndDisplay() {
+            const gender = genderInput.value;
+            const Ht = parseFloat(heightInput.value);
+            const TBW = parseFloat(weightInput.value);
+            const Hb = parseFloat(haemoglobinInput.value);
+            const hctInitial = parseFloat(hctInitialInput.value);
+            const hctFinal = parseFloat(hctFinalInput.value);
+            
+            const starvationHours = parseFloat(starvationHoursInput.value) || 0;
+            const maintenanceFactor = parseFloat(maintenanceFactorInput.value) || 0;
+            const bloodLoss = parseFloat(bloodLossInput.value) || 0;
+            const replacementFactor = parseFloat(replacementFactorInput.value) || 0;
+
+            let bodyMassOutputHTML = '';
+            let bmi, ibw, ffm; // To be used across calculations
+
+            // 1. BMI
+            let bmiResultHTML, bmiFormulaHTML = 'BMI = TBW (kg) / (Ht (m))²';
+            if (Ht > 0 && TBW > 0) {
+                const Ht_m = Ht / 100;
+                bmi = TBW / (Ht_m * Ht_m);
+                bmiResultHTML = createResultDisplay(bmi.toFixed(2), 'kg/m²');
+            } else {
+                bmi = null;
+                bmiResultHTML = createErrorDisplay('Need Ht & TBW');
+            }
+            bodyMassOutputHTML += createResultCard('Body Mass Index (BMI)', bmiResultHTML, bmiFormulaHTML);
+
+            if (bmi) {
+                let category = '', colorClass = '';
+                if (bmi < 18.5) { category = 'Underweight'; colorClass = 'text-yellow-600'; }
+                else if (bmi < 25) { category = 'Normal weight'; colorClass = 'text-green-600'; }
+                else if (bmi < 30) { category = 'Overweight'; colorClass = 'text-yellow-600'; }
+                else if (bmi < 35) { category = 'Obesity (Class I)'; colorClass = 'text-orange-600'; }
+                else if (bmi < 40) { category = 'Obesity (Class II)'; colorClass = 'text-red-600'; }
+                else { category = 'Obesity (Class III)'; colorClass = 'text-red-800'; }
+                bodyMassOutputHTML += createCategoryDisplay(category, colorClass);
+            }
+
+            let ibwResultHTML, ibwFormulaHTML = `Male: 50 + 0.9055 * (Ht (cm) - 152)\nFemale: 45.5 + 0.9055 * (Ht (cm) - 152)`;
+            if (Ht > 152) {
+                const base = gender === 'male' ? 50 : 45.5;
+                ibw = base + 0.9055 * (Ht - 152);
+                ibwResultHTML = createResultDisplay(ibw.toFixed(1), 'kg');
+            } else {
+                ibw = null;
+                ibwResultHTML = createErrorDisplay('Ht must be > 152cm');
+            }
+            bodyMassOutputHTML += createResultCard('Ideal Body Weight (IBW)', ibwResultHTML, ibwFormulaHTML);
+            
+            let cbwResultHTML, cbwFormulaHTML = 'CBW = IBW + 0.4 * (TBW - IBW)';
+            if (ibw && TBW) {
+                const cbw = ibw + 0.4 * (TBW - ibw);
+                cbwResultHTML = createResultDisplay(cbw.toFixed(1), 'kg');
+            } else {
+                cbwResultHTML = createErrorDisplay('Need Ht & TBW');
+            }
+            bodyMassOutputHTML += createResultCard('Corrected Body Weight', cbwResultHTML, cbwFormulaHTML);
+
+            let lbmResultHTML, lbmFormulaHTML = `Male: (1.1 * TBW) - 128 * (TBW / Ht)²\nFemale: (1.07 * TBW) - 148 * (TBW / Ht)²`;
+            if (TBW > 0 && Ht > 0) {
+                let lbm;
+                if (gender === 'male') {
+                    lbm = (1.1 * TBW) - 128 * Math.pow(TBW / Ht, 2);
+                } else {
+                    lbm = (1.07 * TBW) - 148 * Math.pow(TBW / Ht, 2);
+                }
+                lbmResultHTML = createResultDisplay(lbm.toFixed(1), 'kg');
+            } else {
+                lbmResultHTML = createErrorDisplay('Need Ht & TBW');
+            }
+            bodyMassOutputHTML += createResultCard('Lean Body Mass (LBM)', lbmResultHTML, lbmFormulaHTML);
+
+            let ffmResultHTML, ffmFormulaHTML = `Male: (9270*TBW)/(6680+216*BMI)\nFemale: (9270*TBW)/(8780+244*BMI)`;
+            if (TBW > 0 && bmi) {
+                if (gender === 'male') {
+                    ffm = (9270 * TBW) / (6680 + 216 * bmi);
+                } else {
+                    ffm = (9270 * TBW) / (8780 + 244 * bmi);
+                }
+                ffmResultHTML = createResultDisplay(ffm.toFixed(1), 'kg');
+            } else {
+                ffm = null;
+                ffmResultHTML = createErrorDisplay('Need Ht & TBW');
+            }
+            bodyMassOutputHTML += createResultCard('Fat-Free Mass (FFM)', ffmResultHTML, ffmFormulaHTML);
+
+            let mffmResultHTML, mffmFormulaHTML = 'MFFM = FFM + 0.4 * (TBW - FFM)';
+            if (ffm && TBW) {
+                const mffm = ffm + 0.4 * (TBW - ffm);
+                mffmResultHTML = createResultDisplay(mffm.toFixed(1), 'kg');
+            } else {
+                mffmResultHTML = createErrorDisplay('Need Ht & TBW');
+            }
+            bodyMassOutputHTML += createResultCard('Modified Fat-Free Mass', mffmResultHTML, mffmFormulaHTML);
+            
+            let pkmResultHTML, pkmFormulaHTML = 'PKM = 52 + (196.4 * e^(-0.025*TBW - 53.66))/100';
+            if (TBW > 0) {
+                const pkm = 52 + (196.4 * Math.exp(-0.025 * TBW - 53.66)) / 100;
+                pkmResultHTML = createResultDisplay(pkm.toFixed(1), 'kg');
+            } else {
+                pkmResultHTML = createErrorDisplay('Need TBW');
+            }
+            bodyMassOutputHTML += createResultCard('Pharmacokinetic Mass (Fentanyl)', pkmResultHTML, pkmFormulaHTML);
+
+            calculationsContainer.innerHTML = bodyMassOutputHTML;
+
+            // --- IV Agents ---
+            let ivAgentsHTML = '';
+            if (TBW > 0) {
+                let propofolHTML = createDrugSubCard('Induction', createSubResultDisplay(`${(TBW * 2).toFixed(0)} - ${(TBW * 3).toFixed(0)}`, 'mg', 'yellow'), 'Dose = TBW * (2-3 mg/kg)');
+                let propMaintLowMcg = TBW * 100, propMaintHighMcg = TBW * 300;
+                let propMaintLowMg = propMaintLowMcg/1000, propMaintHighMg = propMaintHighMcg/1000;
+                propofolHTML += createDrugSubCard('Maintenance', createSubResultDisplay(`${propMaintLowMg.toFixed(1)} - ${propMaintHighMg.toFixed(1)}`, 'mg/min', 'yellow'), 'Rate = (TBW * (100-300 mcg/kg/min)) / 1000', 'yellow');
+                let propPumpLow = (propMaintLowMcg / 20000) * 60, propPumpHigh = (propMaintHighMcg / 20000) * 60;
+                propofolHTML += createDrugSubCard('Pump Setting (20mg/mL)', createSubResultDisplay(`${propPumpLow.toFixed(1)} - ${propPumpHigh.toFixed(1)}`, 'mL/hr', 'yellow'), 'Rate = (mcg/min Dose * 60) / 20000', 'yellow');
+                let propCsLoad = TBW * 0.5;
+                let propCsInfLowMcg = TBW * 25, propCsInfHighMcg = TBW * 75;
+                let propCsInfLowMgMin = propCsInfLowMcg/1000, propCsInfHighMgMin = propCsInfHighMcg/1000;
+                let propCsInfLowMgHr = propCsInfLowMgMin * 60, propCsInfHighMgHr = propCsInfHighMgMin * 60;
+                propofolHTML += createDrugSubCard('Conscious Sedation', 
+                    `Loading: ${createSubResultDisplay(propCsLoad.toFixed(1), 'mg', 'yellow')}<br>
+                     Infusion: ${createSubResultDisplay(`${propCsInfLowMgMin.toFixed(2)}-${propCsInfHighMgMin.toFixed(2)}`, 'mg/min', 'yellow')}<br>
+                     Infusion: ${createSubResultDisplay(`${propCsInfLowMgHr.toFixed(1)}-${propCsInfHighMgHr.toFixed(1)}`, 'mg/hr', 'yellow')}`, 
+                    'Loading = TBW * 0.5 mg/kg\nInfusion (mg/min) = (TBW * (25-75 mcg/kg/min))/1000\nInfusion (mg/hr) = mg/min * 60', 'yellow');
+                let propCsPumpLow = propCsInfLowMcg * 0.003, propCsPumpHigh = propCsInfHighMcg * 0.003;
+                propofolHTML += createDrugSubCard('CS Pump Setting', createSubResultDisplay(`${propCsPumpLow.toFixed(1)} - ${propCsPumpHigh.toFixed(1)}`, 'mL/hr', 'yellow'), 'Rate = mcg/min Dose * 0.003', 'yellow');
+                ivAgentsHTML += `<div class="p-4 bg-yellow-200/50 rounded-lg"><h3 class="font-bold text-lg text-yellow-900">Propofol</h3>${propofolHTML}</div>`;
+
+                let ketamineHTML = createDrugSubCard('Intense Analgesia (IV)', createSubResultDisplay(`${(TBW * 0.2).toFixed(1)} - ${(TBW * 0.8).toFixed(1)}`, 'mg', 'yellow'), 'Dose = TBW * (0.2-0.8 mg/kg)');
+                ketamineHTML += createDrugSubCard('Intense Analgesia (IM)', createSubResultDisplay(`${(TBW * 2).toFixed(0)} - ${(TBW * 4).toFixed(0)}`, 'mg', 'yellow'), 'Dose = TBW * (2-4 mg/kg)');
+                ketamineHTML += createDrugSubCard('Pre-emptive Analgesia', createSubResultDisplay(`${(TBW * 0.15).toFixed(1)} - ${(TBW * 0.25).toFixed(1)}`, 'mg', 'yellow'), 'Dose = TBW * (0.15-0.25 mg/kg)');
+                ketamineHTML += createDrugSubCard('Induction', createSubResultDisplay(`${(TBW * 1).toFixed(0)} - ${(TBW * 2).toFixed(0)}`, 'mg', 'yellow'), 'Dose = TBW * (1-2 mg/kg)');
+                let ketMaintLowMg = (TBW * 15)/1000, ketMaintHighMg = (TBW * 45)/1000;
+                ketamineHTML += createDrugSubCard('Maintenance', createSubResultDisplay(`${ketMaintLowMg.toFixed(2)} - ${ketMaintHighMg.toFixed(2)}`, 'mg/min', 'yellow'), 'Rate = (TBW * (15-45 mcg/kg/min))/1000');
+                ivAgentsHTML += `<div class="p-4 bg-yellow-200/50 rounded-lg"><h3 class="font-bold text-lg text-yellow-900">Ketamine</h3>${ketamineHTML}</div>`;
+
+                let midazolamHTML = createDrugSubCard('Procedural Sedation', createSubResultDisplay(`${(TBW * 0.05).toFixed(1)} - ${(TBW * 0.1).toFixed(1)}`, 'mg', 'orange'), 'Dose = TBW * (0.05-0.1 mg/kg)');
+                midazolamHTML += createDrugSubCard('Induction', createSubResultDisplay(`${(TBW * 0.2).toFixed(1)} - ${(TBW * 0.4).toFixed(1)}`, 'mg', 'orange'), 'Dose = TBW * (0.2-0.4 mg/kg)');
+                midazolamHTML += createDrugSubCard('Anticonvulsant', createSubResultDisplay(`${(TBW * 0.05).toFixed(1)} - ${(TBW * 0.1).toFixed(1)}`, 'mg', 'orange'), 'Dose = TBW * (0.05-0.1 mg/kg)');
+                ivAgentsHTML += `<div class="p-4 bg-orange-200/50 rounded-lg"><h3 class="font-bold text-lg text-orange-900">Midazolam</h3>${midazolamHTML}</div>`;
+
+                let dexHTML = createDrugSubCard('Loading Dose', createSubResultDisplay(`${(TBW * 0.5).toFixed(1)} - ${(TBW * 1).toFixed(1)}`, 'mcg', 'orange'), 'Dose = TBW * (0.5-1 mcg/kg)');
+                let dexInfLowMcg = TBW * 0.1, dexInfHighMcg = TBW * 1;
+                dexHTML += createDrugSubCard('Infusion Dose', createSubResultDisplay(`${dexInfLowMcg.toFixed(1)} - ${dexInfHighMcg.toFixed(1)}`, 'mcg/hr', 'orange'), 'Rate = TBW * (0.1-1 mcg/kg/hr)');
+                let dexPump25Low = dexInfLowMcg / 25, dexPump25High = dexInfHighMcg / 25;
+                let dexPump50Low = dexInfLowMcg / 50, dexPump50High = dexInfHighMcg / 50;
+                dexHTML += createDrugSubCard('Pump (25 mcg/cc)', createSubResultDisplay(`${dexPump25Low.toFixed(1)} - ${dexPump25High.toFixed(1)}`, 'mL/hr', 'orange'), 'Rate = (mcg/hr Dose) / 25');
+                dexHTML += createDrugSubCard('Pump (50 mcg/cc)', createSubResultDisplay(`${dexPump50Low.toFixed(1)} - ${dexPump50High.toFixed(1)}`, 'mL/hr', 'orange'), 'Rate = (mcg/hr Dose) / 50');
+                ivAgentsHTML += `<div class="p-4 rounded-lg striped-bg-orange-yellow"><h3 class="font-bold text-lg text-orange-900">Dexmedetomidine</h3>${dexHTML}</div>`;
+
+            } else {
+                ivAgentsHTML = `<div class="bg-yellow-200/50 text-yellow-800 p-3 rounded-lg"><p class="font-semibold">Please enter Weight to calculate IV agent doses.</p></div>`;
+            }
+            ivAgentsOutput.innerHTML = ivAgentsHTML;
+
+            // --- LA Doses ---
+            let laDosesHTML = '';
+            if (TBW > 0) {
+                const header = `<div class="grid grid-cols-3 items-center text-sm font-bold text-slate-900 px-2">
+                                    <span>Route</span><span class="text-center">With Adrenaline</span><span class="text-center">Without Adrenaline</span>
+                               </div>`;
+                
+                const lidoInfWith = Math.min(TBW * 7, 500);
+                const lidoInfWithout = Math.min(TBW * 4.5, 300);
+                let lidoHTML = header + createLADoseRow('Infiltration', `${lidoInfWith.toFixed(0)} mg`, `${lidoInfWithout.toFixed(0)} mg`) + createLADoseRow('Epidural', `${lidoInfWith.toFixed(0)} mg`, `${lidoInfWithout.toFixed(0)} mg`) + createLADoseRow('Spinal', 'N/A', '60-100 mg');
+                lidoHTML += `<div class="text-xs text-slate-600 mt-1 px-2">2% Vol: <strong>${(lidoInfWith/20).toFixed(1)}mL</strong> / <strong>${(lidoInfWithout/20).toFixed(1)}mL</strong> | 4% Vol: <strong>${(lidoInfWith/40).toFixed(1)}mL</strong> / <strong>${(lidoInfWithout/40).toFixed(1)}mL</strong></div>`;
+                const lidoFormula = `With Adrenaline: min(TBW * 7, 500) mg\nWithout Adrenaline: min(TBW * 4.5, 300) mg\nVolume (mL) = Dose (mg) / (Concentration * 10)`;
+                laDosesHTML += createLADoseCard('Lidocaine (Lignocaine)', lidoHTML, lidoFormula);
+
+                const levoDose = Math.min(TBW * 1, 150);
+                let levoHTML = header + createLADoseRow('Infiltration', `${levoDose.toFixed(0)} mg*`, `${levoDose.toFixed(0)} mg*`) + createLADoseRow('Epidural', `${levoDose.toFixed(0)} mg*`, `${levoDose.toFixed(0)} mg*`) + createLADoseRow('Spinal', 'N/A', '7.5-15 mg') + `<p class="text-xs text-slate-600 mt-1 px-2">*Max single dose. Max 400mg/24hr.</p>`;
+                levoHTML += `<div class="text-xs text-slate-600 mt-1 px-2">0.5% Vol: <strong>${(levoDose/5).toFixed(1)} mL</strong></div>`;
+                const levoFormula = `Dose = min(TBW * 1 mg/kg, 150 mg)\n24-hour Max: 400 mg\nVolume (mL) = Dose (mg) / 5`;
+                laDosesHTML += createLADoseCard('Levobupivacaine', levoHTML, levoFormula);
+
+                const bupiInfWith = Math.min(TBW * 2.5, 175).toFixed(0);
+                const bupiEpiWith = Math.min(TBW * 3, 225).toFixed(0);
+                const bupiEpiWithout = Math.min(TBW * 2.5, 175).toFixed(0);
+                let bupiHTML = header + createLADoseRow('Infiltration', `${bupiInfWith} mg`, `${bupiInfWith} mg`) + createLADoseRow('Epidural', `${bupiEpiWith} mg`, `${bupiEpiWithout} mg`) + createLADoseRow('Spinal', 'N/A', '7.5-20 mg');
+                const bupiFormula = `Infiltration: min(TBW * 2.5, 175) mg\nEpidural (With Adrenaline): min(TBW * 3, 225) mg\nEpidural (Plain): min(TBW * 2.5, 175) mg`;
+                laDosesHTML += createLADoseCard('Bupivacaine', bupiHTML, bupiFormula);
+
+                let ropiHTML = header + createLADoseRow('Infiltration', '200 mg', '200 mg') + createLADoseRow('Epidural', '200 mg', '200 mg') + createLADoseRow('Spinal', 'N/A', '15-20 mg');
+                const ropiFormula = `Doses are typically fixed (200 mg) and not weight-based.`;
+                laDosesHTML += createLADoseCard('Ropivacaine', ropiHTML, ropiFormula);
+
+            } else {
+                 laDosesHTML = `<div class="bg-slate-200/50 text-slate-800 p-3 rounded-lg"><p class="font-semibold">Please enter Weight to calculate LA doses.</p></div>`;
+            }
+            laDosesOutput.innerHTML = laDosesHTML;
+            
+            // --- Fluid Calculation ---
+            let fluidHTML = '';
+            if (TBW > 0) {
+                const starvationDeficit = 1 * starvationHours * TBW;
+                const bloodLossReplacement = bloodLoss * replacementFactor;
+                
+                fluidHTML += createResultCard('Starvation Deficit', createResultDisplay(starvationDeficit.toFixed(0), 'mL', 'cyan'), '1 mL/kg * Hours of Starvation * TBW', 'cyan');
+                fluidHTML += createResultCard('Blood Loss Replacement', createResultDisplay(bloodLossReplacement.toFixed(0), 'mL', 'cyan'), 'Blood Loss * Replacement Factor', 'cyan');
+                
+                // New "Current Hour" calculator
+                fluidHTML += `<div class="mt-6 p-4 bg-white/70 rounded-lg">
+                    <h3 class="font-semibold text-cyan-800 mb-2">Calculate Total Fluid Given</h3>
+                    <div class="flex items-center gap-4">
+                        <div class="flex-grow">
+                            <label for="current-hour" class="block text-sm font-medium text-cyan-700">Current Hour of Surgery</label>
+                            <input type="number" id="current-hour" class="mt-1 block w-full px-4 py-2 bg-white border-cyan-200 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition" value="1" min="1">
+                        </div>
+                        <div id="current-hour-fluid-output" class="text-right"></div>
+                    </div>
+                </div>`;
+                
+                let tableHTML = `<details class="mt-4"><summary class="font-semibold text-cyan-800 cursor-pointer">Show Deficit & Maintenance Breakdown</summary><div class="mt-2 overflow-x-auto">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-cyan-200/50 text-cyan-900">
+                            <tr>
+                                <th class="p-2">Hr</th><th class="p-2">Maint.</th><th class="p-2">Deficit</th><th class="p-2">Total</th><th class="p-2">Cum.</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+                
+                let cumulativeTotal = 0;
+                const hourlyMaintenance = maintenanceFactor * TBW;
+                const deficitHr1 = starvationDeficit * 0.5;
+                const deficitHr2 = starvationDeficit * 0.25;
+                const deficitHr3 = starvationDeficit * 0.25;
+
+                for (let i = 1; i <= 8; i++) {
+                    let deficitForHour = 0;
+                    if (i === 1) deficitForHour = deficitHr1;
+                    if (i === 2) deficitForHour = deficitHr2;
+                    if (i === 3) deficitForHour = deficitHr3;
+
+                    const totalForHour = hourlyMaintenance + deficitForHour;
+                    cumulativeTotal += totalForHour;
+                    
+                    tableHTML += `<tr class="border-b border-cyan-200/50 bg-white/60">
+                        <td class="p-2 font-bold">${i}</td>
+                        <td class="p-2">${hourlyMaintenance.toFixed(0)}</td>
+                        <td class="p-2">${deficitForHour.toFixed(0)}</td>
+                        <td class="p-2 font-semibold">${totalForHour.toFixed(0)}</td>
+                        <td class="p-2 font-bold">${cumulativeTotal.toFixed(0)}</td>
+                    </tr>`;
+                }
+                tableHTML += `</tbody></table></div></details>`;
+                fluidHTML += tableHTML;
+
+            } else {
+                fluidHTML = `<div class="bg-cyan-200/50 text-cyan-800 p-3 rounded-lg"><p class="font-semibold">Please enter Weight to calculate fluids.</p></div>`;
+            }
+            fluidOutput.innerHTML = fluidHTML;
+            
+            // Add event listener for the new input if it exists
+            const currentHourInput = document.getElementById('current-hour');
+            if(currentHourInput) {
+                currentHourInput.addEventListener('input', calculateAndDisplay);
+            }
+
+            // Calculate and display current hour fluid total
+            const currentHourFluidOutput = document.getElementById('current-hour-fluid-output');
+            if (currentHourFluidOutput && TBW > 0) {
+                const currentHour = parseFloat(document.getElementById('current-hour').value) || 0;
+                let totalDeficitGiven = 0;
+                const starvationDeficit = 1 * starvationHours * TBW;
+                if (currentHour >= 3) {
+                    totalDeficitGiven = starvationDeficit;
+                } else if (currentHour === 2) {
+                    totalDeficitGiven = starvationDeficit * 0.75;
+                } else if (currentHour === 1) {
+                    totalDeficitGiven = starvationDeficit * 0.5;
+                }
+
+                const totalMaintenanceGiven = (maintenanceFactor * TBW) * currentHour;
+                const totalBLReplacementGiven = bloodLoss * replacementFactor; // All given at once
+                const totalFluidGiven = totalMaintenanceGiven + totalDeficitGiven + totalBLReplacementGiven;
+                
+                currentHourFluidOutput.innerHTML = createResultDisplay(totalFluidGiven.toFixed(0), 'mL', 'cyan');
+            } else if (currentHourFluidOutput) {
+                currentHourFluidOutput.innerHTML = '';
+            }
+
+
+            // --- Ventilator Settings ---
+            if (ibw) {
+                const vt_low = ibw * 6;
+                const vt_high = ibw * 8;
+                ventilatorOutput.innerHTML = `
+                    ${createVentilatorResultCard('Tidal Volume (V<sub>T</sub>)', `${vt_low.toFixed(0)} - ${vt_high.toFixed(0)}`, 'mL/kg IBW')}
+                    ${createVentilatorResultCard('PEEP', '≥ 5', 'cmH₂O')}
+                    ${createVentilatorResultCard('Plateau Pressure (P<sub>plat</sub>)', '< 30', 'cmH₂O')}
+                    ${createVentilatorResultCard('Driving Pressure (ΔP)', '< 15', 'cmH₂O')}
+                `;
+            } else {
+                ventilatorOutput.innerHTML = `<div class="bg-purple-200/50 text-purple-800 p-3 rounded-lg"><p class="font-semibold">Please enter Height (>152cm) to calculate ventilator settings.</p></div>`;
+            }
+
+            // --- Blood Loss Calculations ---
+            let bloodLossHTML = '';
+            let ebv = null;
+            if (TBW > 0) {
+                ebv = TBW * 70;
+                bloodLossHTML += createResultCard('Estimated Blood Volume (EBV)', createResultDisplay(ebv.toFixed(0), 'mL', 'red'), 'TBW * 70 mL/kg', 'red');
+            } else {
+                bloodLossHTML += createResultCard('Estimated Blood Volume (EBV)', createErrorDisplay('Need Wt', 'red'), 'TBW * 70 mL/kg', 'red');
+            }
+
+            if (ebv && hctInitial > 0 && hctFinal > 0) {
+                 if (hctInitial <= hctFinal) {
+                    bloodLossHTML += createResultCard('Allowable Blood Loss (ABL)', createErrorDisplay('Initial HCT must be > Final HCT', 'red'), 'EBV * (HCTi - HCTf) / HCTi', 'red');
+                 } else {
+                    const hctInitialDecimal = hctInitial / 100;
+                    const hctFinalDecimal = hctFinal / 100;
+                    const abl = ebv * ((hctInitialDecimal - hctFinalDecimal) / hctInitialDecimal);
+                    bloodLossHTML += createResultCard('Allowable Blood Loss (ABL)', createResultDisplay(abl.toFixed(0), 'mL', 'red'), 'EBV * (HCTi - HCTf) / HCTi', 'red');
+                 }
+            } else {
+                bloodLossHTML += createResultCard('Allowable Blood Loss (ABL)', createErrorDisplay('Need Wt, HCTi, HCTf', 'red'), 'EBV * (HCTi - HCTf) / HCTi', 'red');
+            }
+
+            if (TBW > 0 && Hb > 0) {
+                if (Hb <= 8) {
+                    bloodLossHTML += createResultCard('Max. Allowable Blood Loss (MABL)', createErrorDisplay('Starting Hb must be > 8', 'red'), `(BW * (Hb-8)/((Hb+8)/2)) * Factor`, 'red');
+                } else {
+                    const factor = gender === 'male' ? 70 : 65;
+                    const mabl = (TBW * (Hb - 8) / ((Hb + 8) / 2)) * factor;
+                    const formula = `(BW * (Hb - 8) / ((Hb + 8) / 2)) * Factor\nFactor: ${factor} (${gender})`;
+                    bloodLossHTML += createResultCard('Max. Allowable Blood Loss (MABL)', createResultDisplay(mabl.toFixed(0), 'mL', 'red'), formula, 'red');
+                }
+            } else {
+                bloodLossHTML += createResultCard('Max. Allowable Blood Loss (MABL)', createErrorDisplay('Need Wt & Hb', 'red'), `(BW * (Hb-8)/((Hb+8)/2)) * Factor`, 'red');
+            }
+            bloodLossOutput.innerHTML = bloodLossHTML;
+        }
+
+        // --- Event Listeners ---
+        patientForm.addEventListener('input', calculateAndDisplay);
+        document.getElementById('fluid-calculation').addEventListener('input', calculateAndDisplay);
+
+        navSelect.addEventListener('change', (event) => {
+            const targetId = event.target.value;
+            const targetElement = document.querySelector(targetId);
+            if (targetElement) {
+                const headerOffset = 90; 
+                const elementPosition = targetElement.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+                window.scrollTo({ top: offsetPosition, behavior: "smooth" });
+            }
+        });
+
+        // --- Initial Calculation on Load ---
+        window.addEventListener('load', calculateAndDisplay);
+
+    </script>
+</body>
+</html>
